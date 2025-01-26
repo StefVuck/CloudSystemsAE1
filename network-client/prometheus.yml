@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'cloud-performance'
+    static_configs:
+      - targets: ['${AWS_ENDPOINT}']
+        labels:
+          provider: 'aws'
+      - targets: ['${GCP_ENDPOINT}']
+        labels:
+          provider: 'gcp'
+      - targets: ['${AZURE_ENDPOINT}']
+        labels:
+          provider: 'azure'
