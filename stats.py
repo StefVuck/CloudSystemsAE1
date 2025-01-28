@@ -17,36 +17,40 @@ def query_prometheus(metric:str, timeframe:str, prometheus_url:str="localhost:90
     request_str = f"http://{prometheus_url}/api/v1/query?query={metric}[{timeframe}]"
     return json.loads(requests.get(request_str).text)
 
-def add_metric_to_df(metric:str, duration:str, platforms:list[tuple]=[("none", "localhost")]) -> pd.DataFrame:
+def add_metric_to_df(metric:tuple, duration:str, platforms:list[str]=["aws", "gcp", "azure"]) -> pd.DataFrame:
     def getSecondValue(val) -> int:
         return int(val[1])
 
-    # df = pd.DataFrame(columns = ["value", "platform", "metric"])
     dfs = []
 
-    for platform, cluster_ip in platforms:
-        dictionary = query_prometheus(metric, duration, f"{cluster_ip}:9090")
-        values = list(map(getSecondValue, dictionary['data']['result'][0]['values'])) # I *Think* each list is [Epoch, value(str)]
-        dfs.append(pd.DataFrame({
-            'value': values,
-            'platform': len(values) * [platform],
-            'metric': len(values) * [metric]
-            }))
+    for platform in platforms:
+        filter = metric[1]
+        sep = "," if filter != "" else ""
+        request = metric[0] +"{" + filter + sep + "provider=\"" + platform + "\"}"
+        print(request)
+        dictionary = query_prometheus(request, duration, "localhost:9090")
+        print(dictionary)
 
+        if len(dictionary['data']['result']) > 0:
+            values = list(map(getSecondValue, dictionary['data']['result'][0]['values'])) # I *Think* each list is [Epoch, value(str)]
+            dfs.append(pd.DataFrame({
+                'value': values,
+                'platform': len(values) * [platform],
+                'metric': len(values) * [metric]
+                }))
+
+    assert len(dfs) > 0, "Could not get results from any platform"
     return(pd.concat(dfs))
 
 
 if __name__ == '__main__':
-    alpha=0.05
+    alpha = 0.05
     timeframe = "5m"
-    # Eventually going to have something like:
-    # requests = [("AWS", "$AWS_ENDPOINT"), ("GCP", "$GCP_ENDPOINT"), ("AZURE", "$AZURE_ENDPOINT")]
-    requests = [("none", "localhost"), ("yone", "localhost")]
 
     metrics_dfs = []
-    metrics = ["network_connection_errors_total", 'network_throughput_bytes_total{direction="upload"}', 'network_throughput_bytes_total{direction="download"}'] # Add latency
+    metrics = [("network_throughput_bytes_total", "direction=\"upload\""), ("network_throughput_bytes_total", "direction=\"download\""), ("network_connection_errors_total", "")] # Add latency
     for metric in metrics:
-        metrics_dfs.append(add_metric_to_df(metric, timeframe, requests))
+        metrics_dfs.append(add_metric_to_df(metric, timeframe))
 
     df = pd.concat(metrics_dfs)
 
