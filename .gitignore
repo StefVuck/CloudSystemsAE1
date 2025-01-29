@@ -1,1 +1,19 @@
-network-client/.env
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Go
+bin/
+*.exe
+network-perf
+server-binary
+
+# Environment
+.env
+
+# Local testing
+testfile
+
+prometheus.yml
