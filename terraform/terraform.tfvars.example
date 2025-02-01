@@ -1,0 +1,8 @@
+gcp_credentials_file = "/path/to/gcp/credentials.json"
+azure_subscription_id = "example_subscription_id"
+azure_tenant_id      = "example_tenant_id"
+azure_resource_group = "example_resource_group"
+gcp_project_id = "example_project_id"
+ssh_public_key = "example_ssh_public_key"
+app_binary_url = "https://example.com/binaries/server-binary" # S3 Bucket works well
+instance_count = 3  # Optional, defaults to 3

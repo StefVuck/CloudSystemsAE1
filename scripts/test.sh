@@ -12,8 +12,9 @@ dd if=/dev/urandom of=testfile bs=1M count=10 2>/dev/null
 test_endpoint() {
     local endpoint=$1
     local provider=$2
+    local instance_num=$3
 
-    echo "Testing $provider at $endpoint"
+    echo "Testing $provider instance $instance_num at $endpoint"
     
     # Latency test (100 pings)
     echo "Running latency test..."
@@ -35,7 +36,7 @@ test_endpoint() {
     done
 
     avg_latency=$(echo "scale=4; $total_latency / $latency_count" | bc)
-    echo "Latency results for $provider: Avg = ${avg_latency}s, Max = ${max_latency}s, Min = ${min_latency}s"
+    echo "Latency results for $provider instance $instance_num: Avg = ${avg_latency}s, Max = ${max_latency}s, Min = ${min_latency}s"
 
     # Upload test
     echo "Running upload test..."
@@ -47,7 +48,7 @@ test_endpoint() {
     done
 
     avg_upload_speed=$(echo "${upload_speeds[@]}" | awk '{sum=0; for (i=1; i<=NF; i++) sum+=$i; print sum/NF}')
-    echo "Upload speed for $provider: Avg = $(echo "scale=2; $avg_upload_speed/1024/1024" | bc) MB/s"
+    echo "Upload speed for $provider instance $instance_num: Avg = $(echo "scale=2; $avg_upload_speed/1024/1024" | bc) MB/s"
 
     # Download test
     echo "Running download test..."
@@ -59,13 +60,26 @@ test_endpoint() {
     done
 
     avg_download_speed=$(echo "${download_speeds[@]}" | awk '{sum=0; for (i=1; i<=NF; i++) sum+=$i; print sum/NF}')
-    echo "Download speed for $provider: Avg = $(echo "scale=2; $avg_download_speed/1024/1024" | bc) MB/s"
+    echo "Download speed for $provider instance $instance_num: Avg = $(echo "scale=2; $avg_download_speed/1024/1024" | bc) MB/s"
 }
 
-# Run tests in parallel
-test_endpoint "$AWS_ENDPOINT" "AWS" &
-test_endpoint "$GCP_ENDPOINT" "GCP" &
-test_endpoint "$AZURE_ENDPOINT" "AZURE" &
+# Run tests for AWS instances
+for i in {1..3}; do
+    endpoint_var="AWS_ENDPOINT_${i}"
+    test_endpoint "${!endpoint_var}" "AWS" "$i" &
+done
+
+# Run tests for GCP instances
+for i in {1..3}; do
+    endpoint_var="GCP_ENDPOINT_${i}"
+    test_endpoint "${!endpoint_var}" "GCP" "$i" &
+done
+
+# Run tests for Azure instances
+for i in {1..3}; do
+    endpoint_var="AZURE_ENDPOINT_${i}"
+    test_endpoint "${!endpoint_var}" "Azure" "$i" &
+done
 
 # Wait for all tests to complete
 wait
