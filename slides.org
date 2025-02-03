@@ -1,0 +1,28 @@
+* Application
+
+A multiplayer online game by hobbyist game developers (e.g. for a Game Jam). The game requires low latency, reliable networking and high network throughput.
+
+The project will compare AWS, GCP and Azure with their free VM offerings accessible to students.
+
+* Specific questions
+
+Is there a significant difference in the free tier offerings of AWS, GCP and Azure in terms of:
+ - RTT
+ - Network throughput
+
+* Comparisons
+
+To ensure that the comparison is comparing similar devices:
+ - The regions of each VM are set to the closest datacentre to London (AWS/GCP - EUW2, Azure - UK South)
+ - All devices are running Ubuntu 22.04_LTS
+
+* Measurements
+
+Use IPerf to generate UDP traffic, results will be stored as Json
+Use ping to get rtt > plaintext
+
+Collected system metrics are stored by Prometheus
+
+Grafana and [[https://github.com/hchiuzhuo/iperfPlotter][iperfPlotter]] will be used to plot metrics
+
+Statistics testing for significant differences will be done in Python using statsmodels -> can check if there is a real difference
