@@ -1,0 +1,104 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{url}
+\usepackage{graphicx}
+\graphicspath{{figures}}
+
+\usepackage{mathptmx} % Use Times Font
+
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+
+\usepackage{bibentry}
+\nobibliography*
+
+\title{Cloud Systems AE1 Report}
+
+\author{
+  % Just did alphabetical order, but you're free to change if you want
+  Alistair Johnston \\  2560836j
+  \and
+  Stefan Vučković \\ 2621177v
+}
+
+\date{\today} % Can do \date{{}} if we want empty
+
+\begin{document}
+
+
+\flushbottom
+\maketitle
+\thispagestyle{empty}
+
+\section*{Application context}
+The application being considered is `a multiplayer online game by hobbyist game developers for a game jam'.
+This application requires:
+\begin{enumerate}
+\item{Low network latency, the game must be responsive to player input};
+\item{Reliable networking, the server should have the lowest rate of packet loss possible};
+\item{High network throughput, the server must be able to process many users at once without slowdown}.
+\end{enumerate}
+
+For this application the developers are students who have access to the free and student tiers of \href{https://aws.amazon.com/free/}{AWS}, \href{https://azure.microsoft.com/en-us/free/students}{Azure} and \href{https://cloud.google.com/free?hl=en}{GCP}. The developers want to compare these offerings to each other to decide which offering would best support their game.
+
+\section*{Methodology}
+For each cloud provider (AWS, Azure, GCP):
+\begin{enumerate}
+  \item{Use Terraform to provision the VM;} %bit more needed here
+  \item{Allow 5 minutes to elapse to mitigate potential warm-up effects;}
+  \item{Install dependencies on the VM: \texttt{sudo apt install iperf3};}
+  \item{Run \texttt{iperf3 -s} to initialise an iperf server;}
+\end{enumerate}
+
+After the IPerf server is initialised the following steps are performed on a local machine (e.g. Laptop, Desktop):
+\begin{enumerate}
+  \item{Run \texttt{iperf3 -c <IP> -t <duration>  -u -P <parallel\_hosts> --json --logfile <result\_file.json>} on the laptop}
+  \item{Run \texttt{ping -c <count> <VM ip>} > <result\_file>}
+\end{enumerate}
+
+\section*{Results}
+\textbf{Do some cool graphs and stuff}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{placeholder.jpg}
+\caption{Box and whisker plot showing the round trip times for each VM}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{placeholder.jpg}
+\caption{Plot of network throughput on AWS VM}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{placeholder.jpg}
+\caption{Plot of network throughput on Azure VM}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{placeholder.jpg}
+\caption{Plot of network throughput on GCP VM}
+\end{figure}
+
+\textbf{Meant to have 6 graphs from spec, but not sure what other 2 would be of value}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{placeholder.jpg}
+\caption{Grafana Something?}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{placeholder.jpg}
+\caption{Grafana Something?}
+\end{figure}
+
+\textbf{Also want to do a stats test to see diff in whatever metrics seem of interest (should be able to do all if we want)}
+
+\section*{Conclusions}
+
+\end{document}
