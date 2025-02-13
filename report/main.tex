@@ -3,9 +3,13 @@
 \usepackage[T1]{fontenc}
 \usepackage{url}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
-\usepackage{cleveref}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{cleveref}
+\crefname{lstlisting}{Listing}{Listings}
+\Crefname{lstlisting}{Listing}{Listings}
+\crefname{lstnumber}{Listing}{Listings}
+\Crefname{lstnumber}{Listing}{Listings}
 \usepackage{color}
 \usepackage{wrapfig}
 
@@ -74,7 +78,8 @@
 \thispagestyle{empty}
 
 \section*{Application context}
-The application being considered is `a multiplayer online game by hobbyist game developers for a game jam'.
+The application being considered is `a multiplayer online game by hobbyist game developers for a game jam'. For example a set of students produced an online multiplier game over 2 days as a part of Duck Sauce Game Jam 2025.
+
 This application requires:
 \begin{enumerate}
 \item{Low network latency, the round trip time (RTT) should be minimised};
@@ -89,14 +94,14 @@ For each cloud provider (AWS, Azure, GCP):
 \begin{enumerate}
   \item{Deploy a VM in the `UK South' region;}
   \item{Allow 5 minutes to elapse to mitigate potential warm-up effects;}
-  \item{Clone and run the \href{https://github.com/StefVuck/CloudSystemsAE1/tree/f39212e9e3b1d692e06152948270db8c1668b140/network-perf}{Go benchmarking server} on the VM.}
+  \item{Build and run the Go benchmarking server (\Cref{benchmarking-server}) on the VM.}
 \end{enumerate}
 
 After the VM is provisioned and warm-up effects have occurred the benchmarking can happen, on a local machine the following steps are performed:
 \begin{enumerate}
-  \item{Run \texttt{ping -c 200 <VM ip> > <result\_file>}, to create a log of 200 round trip times, these can then be used with \href{https://github.com/StefVuck/CloudSystemsAE1/blob/f39212e9e3b1d692e06152948270db8c1668b140/report/scripts/ping_boxplot.py}{the plot script} to produce a boxplot of VM RTTs;}
+  \item{Run \texttt{ping -c 200 <VM ip> > <result\_file>}, to create a log of 200 round trip times, these can then be used with the plotting script presented in \Cref{boxplot-script} to produce a boxplot of VM RTTs;}
   \item{Run \texttt{docker compose up} with the included \href{https://github.com/StefVuck/CloudSystemsAE1/blob/f39212e9e3b1d692e06152948270db8c1668b140/network-client/docker-compose.yml}{docker-compose.yml} to run Prometheus and Grafana locally, for metric collection and plotting respectively;}
-  \item{Run the \href{https://github.com/StefVuck/CloudSystemsAE1/blob/f39212e9e3b1d692e06152948270db8c1668b140/scripts/test.sh}{test script} to produce metrics;}
+  \item{Run the test script (shown in \Cref{test-script}) to produce metrics;}
   \item{Use Grafana to plot metrics, here we consider those defined below.}
 \end{enumerate}
 
@@ -122,44 +127,48 @@ Upload Throughput & rate(network\_throughput\_bytes\_total{direction="upload"}[1
 \end{figure}
 
 \begin{figure}
-\label{latency}
 \includegraphics[width=\textwidth]{Latency.jpeg}
 \caption{Grafana plot of network latency for each VM}
+\label{latency}
 \end{figure}
 
 \begin{figure}
-\label{latency-var}
 \includegraphics[width=\textwidth]{LatencyVar.jpeg}
 \caption{Grafana plot of the variability of the network latency for each VM}
+\label{latencyvar}
 \end{figure}
 
-\Cref{boxplot} shows the RTTs from each cloud provider, here we see that GCP outperforms both AWS and Azure. GCP has lower means, less variance and fewer outliers above 40ms. While GCP has lower RTT than the other providers, \Cref{latency} shows that AWS has consistently lower network latency than both Azure and GCP. As the RTT for GCP was lower than AWS this must mean that the traffic returning from AWS is much slower than traffic returning from GCP. This would be bad for the considered application as players rely on feedback from the server for the game to feel responsive and to inform future decisions. Unfortunately the variability for the latency on GCP is far more inconsistent than the variability experienced with the alternate VMs, spiking near the end of the test to over 3 times its lowest variability (shown in \Cref{latency-var}). Inconsistent latency would cause jitters in gameplay which could ruin the experience for players. This would likely mean that, despite the slower RTT AWS would be the best option purely from a network latency standpoint as its RTTs are mostly comparable to GCP's but AWS has consistently lower variance. Azure is stuck in the middle of GCP and AWS with higher RTT than GCP but higher latency and variance than AWS, this means that, only taking latency/RTT into account, AWS would be the best option for deploying a game.
+\Cref{boxplot} shows the RTTs from each cloud provider, here we see that GCP outperforms both AWS and Azure. GCP has less variance and fewer outliers above 40ms, however the RTTs for the other providers have similar lows and mean RTT. While GCP has lower RTT than the other providers, \Cref{latency} shows that AWS has consistently lower network latency than both Azure and GCP. As the RTT for GCP was slightly lower than AWS this must mean that the traffic returning from AWS is much slower than traffic returning from GCP. This would be bad for the game as players rely on feedback from the server for the game to feel responsive and to inform future gameplay decisions. Unfortunately the variability for the latency on GCP is far more inconsistent than the variability experienced with the alternate VMs, spiking near the end of the test to over 3 times its lowest variability (shown in \Cref{latencyvar}). Inconsistent latency would cause jitters in gameplay which could ruin the experience for players. This would likely mean that, despite the slower RTT AWS would be the best option purely from a network latency standpoint as its RTTs are mostly comparable to GCP's but AWS has consistently lower variance. Azure is stuck in the middle of GCP and AWS with higher RTT than GCP but higher latency and variance than AWS. % this means that, only taking latency/RTT into account, AWS would be the best option for deploying a game.
 
 \begin{figure}
-\label{download}
 \includegraphics[width=\textwidth]{DownloadRate.jpeg}
 \caption{Grafana plot of download rate for each VM}
+\label{download}
 \end{figure}
 
 \begin{figure}
-\label{download-var}
 \includegraphics[width=\textwidth]{DownloadRateVar.jpeg}
 \caption{Grafana plot of variability of download rate for each VM}
+\label{downloadvar}
 \end{figure}
 
 \begin{figure}
-\label{upload}
 \includegraphics[width=\textwidth]{UploadRate.jpeg}
 \caption{Grafana plot of upload rate for each VM}
+\label{upload}
 \end{figure}
 
 \begin{figure}
-\label{upload-var}
 \includegraphics[width=\textwidth]{UploadRateVar.jpeg}
 \caption{Grafana plot of variability of upload rate for each VM}
+\label{uploadvar}
 \end{figure}
 
+Download and upload rates are mostly indistinguishable between all 3 cloud providers (shown in \Cref{download} and \Cref{upload}) with AWS potentially having slightly lower rates than the others. As this is the case for the rate itself the most important thing to look at is the rate variability. For downloads we see that Azure has the highest spike but also has periods of very low variability, while AWS and GCP have the same highs with GCP having consistently lower variability than AWS. Meanwhile the upload rates fluctuate much more heavily than downloads; Azure and GCP hit \textasciitilde 7.5MBps with AWS not far behind at a peak of \textasciitilde 6.5MBps.
+
 \section*{Conclusions}
+
+With the upload and download rates being extremely similar between providers and the RTT also being comparable the latency is the deciding factor for choosing between providers for the application. To this end AWS is likely the best choice for deploying the game, it has similar or lower network variability to the other providers but provides a substantially lower network latency which would lead to a more enjoyable experience.
 
 \section*{Appendices}
 
