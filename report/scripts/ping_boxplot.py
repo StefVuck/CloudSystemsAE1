@@ -5,7 +5,7 @@ def readfile(path):
     times = []
     with open(path) as f:
         for line in f:
-            m = re.match(r".*time=(?P<time>[0-9]*.[0-9]*)", line)
+            m = re.match(r".*time=(?P<time>[0-9]*.[0-9]*) ms", line)
             if m:
                 times.append(float(m.group("time")))
 
