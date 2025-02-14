@@ -12,6 +12,8 @@
 \Crefname{lstnumber}{Listing}{Listings}
 \usepackage{color}
 \usepackage{wrapfig}
+\usepackage{array}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 
 
 \definecolor{bluekeywords}{rgb}{0.13, 0.19, 0.7}
@@ -100,20 +102,27 @@ For each cloud provider (AWS, Azure, GCP):
 After the VM is provisioned and warm-up effects have occurred the benchmarking can happen, on a local machine the following steps are performed:
 \begin{enumerate}
   \item{Run \texttt{ping -c 200 <VM ip> > <result\_file>}, to create a log of 200 round trip times, these can then be used with the plotting script presented in \Cref{boxplot-script} to produce a boxplot of VM RTTs;}
-  \item{Run \texttt{docker compose up} with the included \href{https://github.com/StefVuck/CloudSystemsAE1/blob/f39212e9e3b1d692e06152948270db8c1668b140/network-client/docker-compose.yml}{docker-compose.yml} to run Prometheus and Grafana locally, for metric collection and plotting respectively;}
+    \item{Run Prometheus locally with the target(s) set to the IPs of the VM(s);}
+    \item{Run Grafana locally and configure the Prometheus instance as a data source;}
   \item{Run the test script (shown in \Cref{test-script}) to produce metrics;}
   \item{Use Grafana to plot metrics, here we consider those defined below.}
 \end{enumerate}
 
 \begin{center}
-  \begin{tabular}{ll}
+  \begin{tabular}{P{0.2\linewidth} | P{0.8\linewidth}}
     Metric & PromQL expression \\
     \hline
-Latency & rate(network\_latency\_seconds\_sum[1m]) / rate(network\_latency\_seconds\_count[1m]) \\
 
-Download Throughput & rate(network\_throughput\_bytes\_total{direction="download"}[1m]) \\
+Latency (per provider) & rate(network\_latency\_seconds\_sum[1m]) / rate(network\_latency\_seconds\_count[1m]) \\
+Latency Variability & (max by (provider) (rate(network\_latency\_seconds\_sum[1m]) / rate(network\_latency\_seconds\_count[1m])) - min by (provider) (rate(network\_latency\_seconds\_sum[1m]) / rate(network\_latency\_seconds\_count[1m]))) \\
 
-Upload Throughput & rate(network\_throughput\_bytes\_total{direction="upload"}[1m]) \\
+    \hline
+Download Throughput (per provider) & rate(network\_throughput\_bytes\_total{direction="download"}[1m]) \\
+Download Variability & (max by (provider) (rate(network\_throughput\_bytes\_total{direction="download"}[1m])) - min by (provider) (rate(network\_throughput\_bytes\_total{direction="download"}[1m]))) \\
+
+    \hline
+Upload Throughput (per provider) & rate(network\_throughput\_bytes\_total{direction="upload"}[1m]) \\
+Upload Variability & (max by (provider) (rate(network\_throughput\_bytes\_total{direction="upload"}[1m])) - min by (provider) (rate(network\_throughput\_bytes\_total{direction="upload"}[1m]))) \\
 
   \end{tabular}
 \end{center}
